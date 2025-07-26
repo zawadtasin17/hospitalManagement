@@ -2,69 +2,207 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 function PatientRegistration() {
-    const [patient, setPatient] = useState({
+    const [formData, setFormData] = useState({
         name: '',
         email: '',
         phone: '',
+        password: '',
+        confirmPassword: '',
+        userType: 'patient', // Default to 'patient'
+        userAction: 'register', // Can be 'register' or 'login'
     });
 
     const handleChange = (e) => {
-        setPatient({
-            ...patient,
+        setFormData({
+            ...formData,
             [e.target.name]: e.target.value,
         });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            const response = await axios.post('http://localhost:8080/patients', patient);
-            alert('Patient Registered Successfully!');
-            setPatient({ name: '', email: '', phone: '' });
-        } catch (error) {
-            alert('Error registering patient');
+        if (formData.userAction === 'register') {
+            if (formData.password !== formData.confirmPassword) {
+                alert("Passwords don't match");
+                return;
+            }
+            try {
+                const endpoint =
+                    formData.userType === 'patient'
+                        ? 'http://localhost:8080/patients'
+                        : 'http://localhost:8080/doctors';
+
+                const response = await axios.post(endpoint, formData);
+                alert(`${formData.userType === 'patient' ? 'Patient' : 'Doctor'} Registered Successfully!`);
+                setFormData({
+                    name: '',
+                    email: '',
+                    phone: '',
+                    password: '',
+                    confirmPassword: '',
+                    userType: 'patient',
+                    userAction: 'login', // Switch to login after registration
+                });
+            } catch (error) {
+                alert('Error registering user');
+            }
+        } else if (formData.userAction === 'login') {
+            try {
+                const loginData = {
+                    email: formData.email,
+                    password: formData.password,
+                };
+
+                const endpoint =
+                    formData.userType === 'patient'
+                        ? 'http://localhost:8080/login/patient'
+                        : 'http://localhost:8080/login/doctor';
+
+                const response = await axios.post(endpoint, loginData);
+                alert('Logged in successfully!');
+                // Here, handle user session or redirect to a logged-in page
+            } catch (error) {
+                alert('Error logging in');
+            }
         }
     };
 
     return (
-        <div>
-            <h2>Register as a Patient</h2>
+        <div className="container mx-auto p-6 max-w-lg bg-white shadow-lg rounded-lg">
+            <h2 className="text-2xl font-bold mb-4 text-center">
+                {formData.userAction === 'register' ? 'Register as a ' : 'Login to your '} {formData.userType === 'patient' ? 'Patient' : 'Doctor'}
+            </h2>
+
             <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="name">Name: </label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={patient.name}
+                {/* User Type Selection */}
+                <div className="mb-4">
+                    {formData.userAction === 'register' && (
+                        <label htmlFor="userType" className="block text-sm font-medium text-gray-700">Register as:</label>
+                    )}
+                    <select
+                        id="userType"
+                        name="userType"
+                        value={formData.userType}
                         onChange={handleChange}
-                        required
-                    />
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        disabled={formData.userAction === 'login'} // Disable during login
+                    >
+                        <option value="patient">Patient</option>
+                        <option value="doctor">Doctor</option>
+                    </select>
                 </div>
-                <div>
-                    <label htmlFor="email">Email: </label>
+
+                {/* Name Field - Only for Registration */}
+                {formData.userAction === 'register' && (
+                    <div className="mb-4">
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                    </div>
+                )}
+
+                {/* Email Field */}
+                <div className="mb-4">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
                     <input
                         type="email"
                         id="email"
                         name="email"
-                        value={patient.email}
+                        value={formData.email}
                         onChange={handleChange}
                         required
+                        className="w-full p-2 border border-gray-300 rounded-md"
                     />
                 </div>
-                <div>
-                    <label htmlFor="phone">Phone: </label>
+
+                {/* Phone Field */}
+                {formData.userAction === 'register' && (
+                    <div className="mb-4">
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
+                        <input
+                            type="text"
+                            id="phone"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                    </div>
+                )}
+
+                {/* Password Field */}
+                <div className="mb-4">
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
                     <input
-                        type="text"
-                        id="phone"
-                        name="phone"
-                        value={patient.phone}
+                        type="password"
+                        id="password"
+                        name="password"
+                        value={formData.password}
                         onChange={handleChange}
                         required
+                        className="w-full p-2 border border-gray-300 rounded-md"
                     />
                 </div>
-                <button type="submit">Register</button>
+
+                {/* Confirm Password Field - Only for Registration */}
+                {formData.userAction === 'register' && (
+                    <div className="mb-4">
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                        />
+                    </div>
+                )}
+
+                {/* Submit Button */}
+                <button
+                    type="submit"
+                    className="w-full py-3 mt-4 bg-green-500 text-white text-lg font-semibold rounded-md hover:bg-green-600"
+                >
+                    {formData.userAction === 'register' ? 'Register' : 'Login'}
+                </button>
             </form>
+
+            {/* Switch Between Login and Register */}
+            <div className="mt-4 text-center">
+                {formData.userAction === 'register' ? (
+                    <p>
+                        Already have an account?{' '}
+                        <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, userAction: 'login' })}
+                            className="text-blue-500"
+                        >
+                            Login
+                        </button>
+                    </p>
+                ) : (
+                    <p>
+                        Don't have an account?{' '}
+                        <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, userAction: 'register' })}
+                            className="text-blue-500"
+                        >
+                            Register
+                        </button>
+                    </p>
+                )}
+            </div>
         </div>
     );
 }

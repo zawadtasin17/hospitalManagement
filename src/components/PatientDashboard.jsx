@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-
 function PatientDashboard() {
     const [patient, setPatient] = useState(null);
 

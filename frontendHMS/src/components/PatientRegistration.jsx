@@ -93,7 +93,7 @@ function PatientRegistration() {
                         value={formData.userType}
                         onChange={handleChange}
                         className="w-full p-2 border border-gray-300 rounded-md"
-                        disabled={formData.userAction === 'login'} // Disable during login
+                        disabled={formData.userAction === 'login' && formData.userAction === 'patient'} // Disable during login
                     >
                         <option value="patient">Patient</option>
                         <option value="doctor">Doctor</option>

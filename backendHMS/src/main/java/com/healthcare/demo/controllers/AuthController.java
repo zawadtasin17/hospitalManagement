@@ -8,6 +8,8 @@ import com.healthcare.demo.repositories.DoctorRepository;
 import com.healthcare.demo.services.AuthService;
 import com.healthcare.demo.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -48,24 +50,25 @@ public class AuthController {
     }
 
     @PostMapping("/login/patient")
-    public Object loginPatient(@RequestBody Patient patient) {
+    public ResponseEntity<Object> loginPatient(@RequestBody Patient patient) {
         Patient existingPatient = patientRepository.findByEmail(patient.getEmail());
         if (existingPatient != null && passwordEncoder.matches(patient.getPassword(), existingPatient.getPassword())) {
             // Return a JSON response with the token
-            return new AuthResponse(jwtUtil.generateToken(patient.getEmail()));
+            return ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(patient.getEmail())));
         }
-        return "Invalid Credentials";
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
     }
 
     @PostMapping("/login/doctor")
-    public Object loginDoctor(@RequestBody Doctor doctor) {
+    public ResponseEntity<Object> loginDoctor(@RequestBody Doctor doctor) {
         Doctor existingDoctor = doctorRepository.findByEmail(doctor.getEmail());
         if (existingDoctor != null && passwordEncoder.matches(doctor.getPassword(), existingDoctor.getPassword())) {
             // Return a JSON response with the token
-            return new AuthResponse(jwtUtil.generateToken(doctor.getEmail()));
+            return ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(doctor.getEmail())));
         }
-        return "Invalid Credentials";
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
     }
+
 
     // Inner class for the JWT response
         record AuthResponse(String token) {

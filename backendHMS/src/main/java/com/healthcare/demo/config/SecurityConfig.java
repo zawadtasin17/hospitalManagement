@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()               // Allow all OPTIONS (CORS preflight)
                         .requestMatchers("/auth/login/**", "/auth/register/**").permitAll()   // Allow auth endpoints
-                        .requestMatchers(HttpMethod.POST, "/patient").permitAll()            // Allow anonymous POST to /patientw
+                        .requestMatchers(HttpMethod.POST, "/patient").permitAll()            // Allow anonymous POST to /patient
                         .anyRequest().authenticated()                                        // All other requests require auth
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(authenticationManager, jwtUtil), UsernamePasswordAuthenticationFilter.class)

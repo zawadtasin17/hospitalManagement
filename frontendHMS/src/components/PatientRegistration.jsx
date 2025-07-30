@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function PatientRegistration() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -68,6 +70,8 @@ function PatientRegistration() {
 
                 const response = await axios.post(endpoint, loginData);
                 alert('Logged in successfully!');
+                
+                navigate('/patientdashboard'); // Redirect to patient dashboard or doctor dashboard based on user type
                 // Here, handle user session or redirect to a logged-in page
             } catch (error) {
                 alert('Error logging in');

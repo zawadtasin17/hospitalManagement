@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 function NavBar() {
+    const isLoggedIn = !!localStorage.getItem("authToken");
+
     return (
         <nav className="bg-gray-800 p-4 shadow-md">
             <div className="container mx-auto flex justify-between items-center">
@@ -10,15 +12,12 @@ function NavBar() {
                 </div>
                 <div>
                     <ul className="flex space-x-6 text-white">
-                        <li>
-                            <Link to="/" className="hover:text-green-500">Home</Link>
-                        </li>
-                        <li>
-                            <Link to="/register" className="hover:text-green-500">Register</Link>
-                        </li>
-                        <li>
-                            <Link to="/dashboard" className="hover:text-green-500">Dashboard</Link>
-                        </li>
+                        <li><Link to="/" className="hover:text-green-500">Home</Link></li>
+                        {!isLoggedIn ? (
+                            <li><Link to="/register" className="hover:text-green-500">Register</Link></li>
+                        ) : (
+                            <li><Link to="/dashboard" className="hover:text-green-500">Dashboard</Link></li>
+                        )}
                     </ul>
                 </div>
             </div>

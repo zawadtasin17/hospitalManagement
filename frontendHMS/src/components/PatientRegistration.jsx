@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function PatientRegistration() {
     const [formData, setFormData] = useState({
@@ -12,6 +13,8 @@ function PatientRegistration() {
         userAction: 'register', // Can be 'register' or 'login'
     });
 
+    const navigate = useNavigate();  // For redirecting user after login
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -21,22 +24,25 @@ function PatientRegistration() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const endpoint =
+            formData.userAction === 'register'
+                ? formData.userType === 'patient'
+                    ? 'http://localhost:8080/auth/register/patient'
+                    : 'http://localhost:8080/auth/register/doctor'
+                : formData.userType === 'patient'
+                    ? 'http://localhost:8080/auth/login/patient'
+                    : 'http://localhost:8080/auth/login/doctor';
+
         if (formData.userAction === 'register') {
             if (formData.password !== formData.confirmPassword) {
                 alert("Passwords don't match");
                 return;
             }
-            try {
-                const endpoint =
-                    formData.userAction === 'register'
-                        ? formData.userType === 'patient'
-                            ? 'http://localhost:8080/auth/register/patient'
-                            : 'http://localhost:8080/auth/register/doctor'
-                        : formData.userType === 'patient'
-                            ? 'http://localhost:8080/auth/login/patient'
-                            : 'http://localhost:8080/auth/login/doctor';
+        }
 
-                const response = await axios.post(endpoint, formData);
+        try {
+            const response = await axios.post(endpoint, formData);
+            if (formData.userAction === 'register') {
                 alert(`${formData.userType === 'patient' ? 'Patient' : 'Doctor'} Registered Successfully!`);
                 setFormData({
                     name: '',
@@ -47,31 +53,13 @@ function PatientRegistration() {
                     userType: 'patient',
                     userAction: 'login', // Switch to login after registration
                 });
-            } catch (error) {
-                alert('Error registering user');
-            }
-        } else if (formData.userAction === 'login') {
-            try {
-                const loginData = {
-                    email: formData.email,
-                    password: formData.password,
-                };
-
-                const endpoint =
-                    formData.userAction === 'register'
-                        ? formData.userType === 'patient'
-                            ? 'http://localhost:8080/auth/register/patient'
-                            : 'http://localhost:8080/auth/register/doctor'
-                        : formData.userType === 'patient'
-                            ? 'http://localhost:8080/auth/login/patient'
-                            : 'http://localhost:8080/auth/login/doctor';
-
-                const response = await axios.post(endpoint, loginData);
+            } else {
                 alert('Logged in successfully!');
-                // Here, handle user session or redirect to a logged-in page
-            } catch (error) {
-                alert('Error logging in');
+                localStorage.setItem('authToken', response.data.token); // Store JWT token
+                navigate('/dashboard'); // Redirect to dashboard after login
             }
+        } catch (error) {
+            alert('Error registering/logging in user');
         }
     };
 
@@ -93,7 +81,7 @@ function PatientRegistration() {
                         value={formData.userType}
                         onChange={handleChange}
                         className="w-full p-2 border border-gray-300 rounded-md"
-                        disabled={formData.userAction === 'login' && formData.userAction === 'patient'} // Disable during login
+                        // disabled={formData.userAction === 'login'}  // Disable during login
                     >
                         <option value="patient">Patient</option>
                         <option value="doctor">Doctor</option>

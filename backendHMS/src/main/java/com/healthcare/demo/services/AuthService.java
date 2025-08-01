@@ -23,4 +23,12 @@ public class AuthService {
     public Doctor registerDoctor(Doctor doctor) {
         return doctorRepository.save(doctor);
     }
+
+    public Patient getPatientDetails(String email) {
+        return patientRepository.findByEmail(email);
+    }
+
+    public void updatePatientProfile(Patient patient) {
+        patientRepository.save(patient);
+    }
 }

@@ -69,6 +69,14 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
     }
 
+    @GetMapping("/patient/profile")
+    public ResponseEntity<Patient> getPatientProfile(@RequestHeader("Authorization") String token) {
+        String email = jwtUtil.extractUsername(token);
+        Patient patient = patientRepository.findByEmail(email);
+        return ResponseEntity.ok(patient);
+    }
+
+
 
     // Inner class for the JWT response
         record AuthResponse(String token) {

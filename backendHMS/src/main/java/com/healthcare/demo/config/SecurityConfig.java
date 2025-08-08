@@ -56,12 +56,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS here
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()               // Allow all OPTIONS (CORS preflight)
-                        .requestMatchers("/auth/login/**", "/auth/register/**").permitAll()   // Allow auth endpoints
-                        .requestMatchers(HttpMethod.POST, "/patient").permitAll()            // Allow anonymous POST to /patient
-                        .anyRequest().authenticated()                                        // All other requests require auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
+                        .requestMatchers("/auth/login/**", "/auth/register/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/patient").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/doctors/**", "/patient/doctors/**").permitAll() // allow GET doctors
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(authenticationManager, jwtUtil), UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(new JwtAuthorizationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
@@ -69,19 +71,19 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     // Define CORS configuration
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000");  // React frontend URL
+        configuration.addAllowedOrigin("http://localhost:5173"); // React frontend URL http://localhost:3000
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true); // only if needed
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {

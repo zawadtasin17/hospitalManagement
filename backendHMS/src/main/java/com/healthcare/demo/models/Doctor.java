@@ -2,6 +2,7 @@ package com.healthcare.demo.models;
 
 //import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.healthcare.demo.enums.Specialty;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,7 +29,8 @@ public class Doctor {
     // Getters and Setters
     @Setter
     @Getter
-    @JsonIgnore // ignore the password showing in json. password will be shown null in response
+    //@JsonIgnore // ignore the password showing in json. password will be shown null in response
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     //private String specialization;
 

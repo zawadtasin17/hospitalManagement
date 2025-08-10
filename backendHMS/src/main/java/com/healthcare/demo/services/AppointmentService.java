@@ -10,8 +10,14 @@ import com.healthcare.demo.repositories.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.temporal.WeekFields;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class AppointmentService {
@@ -69,6 +75,64 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found with ID: " + appointmentId));
         appointmentRepository.delete(appointment);
+    }
+
+    public List<Appointment> getUpcomingAppointmentsForDoctor(Long doctorId) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + doctorId));
+        LocalDateTime now = LocalDateTime.now();
+
+        return appointmentRepository.findByDoctorAndAppointmentDateTimeAfterAndStatusOrderByAppointmentDateTimeAsc(
+                doctor, now, Status.Scheduled);
+    }
+
+    // New: Get basic appointment statistics for doctor
+    public Map<String, Object> getDoctorStatistics(Long doctorId) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + doctorId));
+        List<Appointment> appointments = appointmentRepository.findByDoctor(doctor);
+
+        long total = appointments.size();
+        long scheduled = appointments.stream().filter(a -> a.getStatus() == Status.Scheduled).count();
+        long completed = appointments.stream().filter(a -> a.getStatus() == Status.Completed).count();
+        long cancelled = appointments.stream().filter(a -> a.getStatus() == Status.Cancelled).count();
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalAppointments", total);
+        stats.put("scheduledAppointments", scheduled);
+        stats.put("completedAppointments", completed);
+        stats.put("cancelledAppointments", cancelled);
+
+        return stats;
+    }
+
+    // New: Dashboard - grouped appointment counts by day and week
+    public Map<String, Object> getDoctorDashboard(Long doctorId) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + doctorId));
+        List<Appointment> appointments = appointmentRepository.findByDoctor(doctor);
+
+        // Group by DayOfWeek (e.g., MONDAY, TUESDAY, ...)
+        Map<DayOfWeek, Long> appointmentsByDay = appointments.stream()
+                .collect(Collectors.groupingBy(
+                        a -> a.getAppointmentDateTime().toLocalDate().getDayOfWeek(),
+                        Collectors.counting()
+                ));
+
+        // Group by week number of year (e.g., week 1, week 2, ...)
+        WeekFields weekFields = WeekFields.ISO; // Monday start of week
+        Map<Integer, Long> appointmentsByWeek = appointments.stream()
+                .collect(Collectors.groupingBy(
+                        a -> a.getAppointmentDateTime().toLocalDate().get(weekFields.weekOfWeekBasedYear()),
+                        Collectors.counting()
+                ));
+
+        Map<String, Object> dashboard = new HashMap<>();
+        dashboard.put("appointmentsByDay", appointmentsByDay);
+        dashboard.put("appointmentsByWeek", appointmentsByWeek);
+        dashboard.put("totalAppointments", appointments.size());
+
+        return dashboard;
     }
 
 }

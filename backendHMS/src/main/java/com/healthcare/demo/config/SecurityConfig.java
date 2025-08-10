@@ -63,6 +63,10 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login/**", "/auth/register/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/patient").permitAll()
                         .requestMatchers(HttpMethod.GET, "/doctors/**", "/patient/doctors/**").permitAll() // allow GET doctors
+                        .requestMatchers(HttpMethod.PUT, "/doctors/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/appointments/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/appointments/**").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(authenticationManager, jwtUtil), UsernamePasswordAuthenticationFilter.class)

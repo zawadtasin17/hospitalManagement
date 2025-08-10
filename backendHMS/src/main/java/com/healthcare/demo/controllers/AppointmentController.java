@@ -1,13 +1,17 @@
 package com.healthcare.demo.controllers;
 
+import com.healthcare.demo.dto.AppointmentDto;
 import com.healthcare.demo.dto.AppointmentRequestDto;
 import com.healthcare.demo.enums.Status;
 import com.healthcare.demo.models.Appointment;
 import com.healthcare.demo.services.AppointmentService;
+import com.healthcare.demo.mapper.AppointmentMapper;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/appointments")
@@ -18,38 +22,52 @@ public class AppointmentController {
         this.appointmentService = appointmentService;
     }
 
-    //Create Appointment
+    // Create Appointment
     @PostMapping("/create")
-    public Appointment createAppointment(@RequestBody AppointmentRequestDto dto) {
-        return appointmentService.createAppointment(
+    public AppointmentDto createAppointment(@RequestBody AppointmentRequestDto dto) {
+        Appointment appointment = appointmentService.createAppointment(
                 dto.getDoctorId(),
                 dto.getPatientId(),
                 LocalDateTime.parse(dto.getDateTime())
         );
+        return AppointmentMapper.toDto(appointment);
     }
 
-    //Get Appointment By Patient
+    // Get Appointments By Patient
     @GetMapping("/patient/{patientId}")
-    public List<Appointment> getAppointmentsByAPatients(@PathVariable Long patientId) {
-        return appointmentService.getAppointmentsByPatient(patientId);
+    public List<AppointmentDto> getAppointmentsByPatient(@PathVariable Long patientId) {
+        return appointmentService.getAppointmentsByPatient(patientId).stream()
+                .map(AppointmentMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    //Get Appointment By Doctor
+    // Get Appointments By Doctor
     @GetMapping("/doctor/{doctorId}")
-    public List<Appointment> getAppointmentsByDoctor(@PathVariable Long doctorId) {
-        return appointmentService.getAppointmentsByDoctor(doctorId);
+    public List<AppointmentDto> getAppointmentsByDoctor(@PathVariable Long doctorId) {
+        return appointmentService.getAppointmentsByDoctor(doctorId).stream()
+                .map(AppointmentMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    // Update Status
+    // Update Appointment Status
     @PutMapping("/{appointmentId}/status")
-    public Appointment updateStatus(@PathVariable Long appointmentId,
-                                    @RequestParam Status status) {
-        return appointmentService.updateStatus(appointmentId, status);
+    public AppointmentDto updateStatus(@PathVariable Long appointmentId,
+                                       @RequestParam Status status) {
+        Appointment appointment = appointmentService.updateStatus(appointmentId, status);
+        return AppointmentMapper.toDto(appointment);
     }
 
-    // Cancel appointment
+    // Cancel Appointment
     @DeleteMapping("/{appointmentId}")
     public void cancelAppointment(@PathVariable Long appointmentId) {
         appointmentService.cancelAppointment(appointmentId);
+    }
+
+    // Get Upcoming Appointments for Doctor
+    @GetMapping("/doctor/{doctorId}/upcoming")
+    public List<AppointmentDto> getUpcomingAppointments(@PathVariable Long doctorId) {
+        return appointmentService.getUpcomingAppointmentsForDoctor(doctorId).stream()
+                .map(AppointmentMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

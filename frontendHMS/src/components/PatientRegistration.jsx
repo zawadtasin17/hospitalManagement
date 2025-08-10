@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'; // your auth hook
 
 function PatientRegistration() {
     const navigate = useNavigate();
+    const { login } = useAuth();
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         phone: '',
         password: '',
         confirmPassword: '',
-        userType: 'patient', // Default to 'patient'
-        userAction: 'register', // Can be 'register' or 'login'
+        userType: 'patient', // default to patient
+        userAction: 'register', // 'register' or 'login'
     });
 
     const handleChange = (e) => {
@@ -21,58 +24,74 @@ function PatientRegistration() {
         });
     };
 
+    const handleLoginSuccess = (responseData) => {
+        if (!responseData.id || !responseData.userType) {
+            alert('Invalid login response from server');
+            return;
+        }
+
+        login({
+            id: responseData.id,
+            userType: responseData.userType,
+        });
+
+        if (responseData.userType === 'patient') {
+            navigate('/patientdashboard');
+        } else if (responseData.userType === 'doctor') {
+            navigate('/doctordashboard');
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         if (formData.userAction === 'register') {
             if (formData.password !== formData.confirmPassword) {
                 alert("Passwords don't match");
                 return;
             }
             try {
-                const endpoint =
-                    formData.userAction === 'register'
-                        ? formData.userType === 'patient'
-                            ? 'http://localhost:8080/auth/register/patient'
-                            : 'http://localhost:8080/auth/register/doctor'
-                        : formData.userType === 'patient'
-                            ? 'http://localhost:8080/auth/login/patient'
-                            : 'http://localhost:8080/auth/login/doctor';
+                const endpoint = formData.userType === 'patient'
+                    ? 'http://localhost:8080/auth/register/patient'
+                    : 'http://localhost:8080/auth/register/doctor';
 
-                const response = await axios.post(endpoint, formData);
+                await axios.post(endpoint, {
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    password: formData.password,
+                });
+
                 alert(`${formData.userType === 'patient' ? 'Patient' : 'Doctor'} Registered Successfully!`);
+
                 setFormData({
                     name: '',
                     email: '',
                     phone: '',
                     password: '',
                     confirmPassword: '',
-                    userType: 'patient',
-                    userAction: 'login', // Switch to login after registration
+                    userType: formData.userType, // keep same userType
+                    userAction: 'login', // switch to login after register
                 });
             } catch (error) {
                 alert('Error registering user');
             }
         } else if (formData.userAction === 'login') {
             try {
+                const endpoint = formData.userType === 'patient'
+                    ? 'http://localhost:8080/auth/login/patient'
+                    : 'http://localhost:8080/auth/login/doctor';
+
                 const loginData = {
                     email: formData.email,
                     password: formData.password,
                 };
 
-                const endpoint =
-                    formData.userAction === 'register'
-                        ? formData.userType === 'patient'
-                            ? 'http://localhost:8080/auth/register/patient'
-                            : 'http://localhost:8080/auth/register/doctor'
-                        : formData.userType === 'patient'
-                            ? 'http://localhost:8080/auth/login/patient'
-                            : 'http://localhost:8080/auth/login/doctor';
-
                 const response = await axios.post(endpoint, loginData);
+
                 alert('Logged in successfully!');
-                
-                navigate('/patientdashboard'); // Redirect to patient dashboard or doctor dashboard based on user type
-                // Here, handle user session or redirect to a logged-in page
+
+                handleLoginSuccess(response.data);
             } catch (error) {
                 alert('Error logging in');
             }
@@ -86,25 +105,24 @@ function PatientRegistration() {
             </h2>
 
             <form onSubmit={handleSubmit}>
-                {/* User Type Selection */}
+                {/* User Type Selection - Always visible */}
                 <div className="mb-4">
-                    {formData.userAction === 'register' && (
-                        <label htmlFor="userType" className="block text-sm font-medium text-gray-700">Register as:</label>
-                    )}
+                    <label htmlFor="userType" className="block text-sm font-medium text-gray-700">
+                        {formData.userAction === 'register' ? 'Register as:' : 'Login as:'}
+                    </label>
                     <select
                         id="userType"
                         name="userType"
                         value={formData.userType}
                         onChange={handleChange}
                         className="w-full p-2 border border-gray-300 rounded-md"
-                        disabled={formData.userAction === 'login' && formData.userAction === 'patient'} // Disable during login
                     >
                         <option value="patient">Patient</option>
                         <option value="doctor">Doctor</option>
                     </select>
                 </div>
 
-                {/* Name Field - Only for Registration */}
+                {/* Name input only during registration */}
                 {formData.userAction === 'register' && (
                     <div className="mb-4">
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
@@ -120,7 +138,7 @@ function PatientRegistration() {
                     </div>
                 )}
 
-                {/* Email Field */}
+                {/* Email input */}
                 <div className="mb-4">
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
                     <input
@@ -134,7 +152,7 @@ function PatientRegistration() {
                     />
                 </div>
 
-                {/* Phone Field */}
+                {/* Phone input only during registration */}
                 {formData.userAction === 'register' && (
                     <div className="mb-4">
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
@@ -150,7 +168,7 @@ function PatientRegistration() {
                     </div>
                 )}
 
-                {/* Password Field */}
+                {/* Password input */}
                 <div className="mb-4">
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
                     <input
@@ -164,7 +182,7 @@ function PatientRegistration() {
                     />
                 </div>
 
-                {/* Confirm Password Field - Only for Registration */}
+                {/* Confirm Password only during registration */}
                 {formData.userAction === 'register' && (
                     <div className="mb-4">
                         <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
@@ -180,7 +198,7 @@ function PatientRegistration() {
                     </div>
                 )}
 
-                {/* Submit Button */}
+                {/* Submit button */}
                 <button
                     type="submit"
                     className="w-full py-3 mt-4 bg-green-500 text-white text-lg font-semibold rounded-md hover:bg-green-600"
@@ -189,7 +207,7 @@ function PatientRegistration() {
                 </button>
             </form>
 
-            {/* Switch Between Login and Register */}
+            {/* Switch form action */}
             <div className="mt-4 text-center">
                 {formData.userAction === 'register' ? (
                     <p>

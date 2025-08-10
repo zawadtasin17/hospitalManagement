@@ -46,4 +46,10 @@ public class DoctorService {
         return doctorRepository.save(doctor);
     }
 
+    //get doctor by id
+    public Doctor getDoctorById(Long doctorId) {
+        return doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + doctorId));
+    }
+
 }

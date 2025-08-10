@@ -1,9 +1,13 @@
 package com.healthcare.demo.controllers;
 
+import com.healthcare.demo.dto.AppointmentDto;
 import com.healthcare.demo.dto.DoctorDto;
 import com.healthcare.demo.enums.Specialty;
+import com.healthcare.demo.mapper.AppointmentMapper;
+import com.healthcare.demo.models.Appointment;
 import com.healthcare.demo.models.Doctor;
 import com.healthcare.demo.repositories.DoctorRepository;
+import com.healthcare.demo.services.AppointmentService;
 import com.healthcare.demo.services.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,24 +17,28 @@ import org.springframework.web.bind.annotation.*;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/doctors")
 public class DoctorController {
     private final DoctorService doctorService;
-
+    private final AppointmentService appointmentService;
     private final DoctorRepository doctorRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DoctorController(
             DoctorService doctorService,
             DoctorRepository doctorRepository,
+            AppointmentService appointmentService,
             PasswordEncoder passwordEncoder
     ) {
         this.doctorService = doctorService;
         this.doctorRepository = doctorRepository;
         this.passwordEncoder = passwordEncoder;
+        this.appointmentService = appointmentService;
     }
 
 //    @GetMapping("/getalldoctors")
@@ -52,12 +60,6 @@ public class DoctorController {
 //    ) {
 //        return doctorService.getDoctorsBySpecialtyAndDay(specialty, dayOfWeek);
 //    }
-
-    @PutMapping("/update/{doctorId}")
-    public ResponseEntity<Doctor> updateDoctorProfile(@PathVariable Long doctorId, @RequestBody DoctorDto dto) {
-        Doctor updatedDoctor = doctorService.updateDoctorProfile(doctorId, dto);
-        return ResponseEntity.ok(updatedDoctor);
-    }
 
     @PostMapping("/doctorseed")
     public ResponseEntity<String> seedDoctors() {
@@ -172,6 +174,40 @@ public class DoctorController {
 
         return ResponseEntity.ok("✅ Sample doctors seeded successfully.");
     }
+
+    // Get Doctor Profile
+    @GetMapping("/{doctorId}/profile")
+    public Doctor getDoctorProfile(@PathVariable Long doctorId) {
+        return doctorService.getDoctorById(doctorId);
+    }
+
+    // Update Doctor Profile
+    @PutMapping("/{doctorId}/profile")
+    public Doctor updateDoctorProfile(@PathVariable Long doctorId, @RequestBody DoctorDto dto) {
+        return doctorService.updateDoctorProfile(doctorId, dto);
+    }
+
+    // Get upcoming appointments - returns list of AppointmentDto
+    @GetMapping("/{doctorId}/appointments/upcoming")
+    public List<AppointmentDto> getUpcomingAppointments(@PathVariable Long doctorId) {
+        return appointmentService.getUpcomingAppointmentsForDoctor(doctorId).stream()
+                .map(AppointmentMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    // 4. Get appointment statistics
+    @GetMapping("/{doctorId}/stats")
+    public Map<String, Object> getDoctorStats(@PathVariable Long doctorId) {
+        return appointmentService.getDoctorStatistics(doctorId);
+    }
+
+    // 5. Doctor dashboard with grouped daily/weekly appointment counts
+    @GetMapping("/{doctorId}/dashboard")
+    public Map<String, Object> getDoctorDashboard(@PathVariable Long doctorId) {
+        return appointmentService.getDoctorDashboard(doctorId);
+    }
+
+
 
 
 }

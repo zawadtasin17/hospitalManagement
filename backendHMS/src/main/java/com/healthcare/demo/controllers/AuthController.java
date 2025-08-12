@@ -1,6 +1,5 @@
 package com.healthcare.demo.controllers;
 
-import com.healthcare.demo.config.SecurityConfig;
 import com.healthcare.demo.models.Patient;
 import com.healthcare.demo.models.Doctor;
 import com.healthcare.demo.repositories.PatientRepository;
@@ -10,7 +9,6 @@ import com.healthcare.demo.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +33,6 @@ public class AuthController {
 
     @PostMapping("/register/patient")
     public String registerPatient(@RequestBody Patient patient) {
-        // Hash password before saving it
         patient.setPassword(passwordEncoder.encode(patient.getPassword()));
         authService.registerPatient(patient);
         return "Patient Registered Successfully!";
@@ -43,7 +40,6 @@ public class AuthController {
 
     @PostMapping("/register/doctor")
     public String registerDoctor(@RequestBody Doctor doctor) {
-        // Hash password before saving it
         doctor.setPassword(passwordEncoder.encode(doctor.getPassword()));
         authService.registerDoctor(doctor);
         return "Doctor Registered Successfully!";
@@ -53,8 +49,13 @@ public class AuthController {
     public ResponseEntity<Object> loginPatient(@RequestBody Patient patient) {
         Patient existingPatient = patientRepository.findByEmail(patient.getEmail());
         if (existingPatient != null && passwordEncoder.matches(patient.getPassword(), existingPatient.getPassword())) {
-            // Return a JSON response with the token
-            return ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(patient.getEmail())));
+            String token = jwtUtil.generateToken(existingPatient.getEmail());
+            return ResponseEntity.ok(new AuthResponse(
+                    token,
+                    existingPatient.getId(),
+                    "patient",
+                    existingPatient.getName()
+            ));
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
     }
@@ -63,22 +64,17 @@ public class AuthController {
     public ResponseEntity<Object> loginDoctor(@RequestBody Doctor doctor) {
         Doctor existingDoctor = doctorRepository.findByEmail(doctor.getEmail());
         if (existingDoctor != null && passwordEncoder.matches(doctor.getPassword(), existingDoctor.getPassword())) {
-            // Return a JSON response with the token
-            return ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(doctor.getEmail())));
+            String token = jwtUtil.generateToken(existingDoctor.getEmail());
+            return ResponseEntity.ok(new AuthResponse(
+                    token,
+                    existingDoctor.getId(),
+                    "doctor",
+                    existingDoctor.getName()
+            ));
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
     }
 
-    @GetMapping("/patient/profile")
-    public ResponseEntity<Patient> getPatientProfile(@RequestHeader("Authorization") String token) {
-        String email = jwtUtil.extractUsername(token);
-        Patient patient = patientRepository.findByEmail(email);
-        return ResponseEntity.ok(patient);
-    }
-
-
-
-    // Inner class for the JWT response
-        record AuthResponse(String token) {
-    }
+    // Updated AuthResponse record with extra fields
+    record AuthResponse(String token, Long id, String userType, String name) {}
 }

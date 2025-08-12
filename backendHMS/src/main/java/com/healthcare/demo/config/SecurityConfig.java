@@ -63,7 +63,11 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login/**", "/auth/register/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/patient").permitAll()
                         .requestMatchers(HttpMethod.GET, "/doctors/**", "/patient/doctors/**").permitAll() // allow GET doctors
-                        .requestMatchers(HttpMethod.PUT, "/doctors/**").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/doctors/*/profile").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/doctors/*/profile").authenticated()
+
+                        //.requestMatchers(HttpMethod.PUT, "/doctors/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/appointments/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/appointments/**").permitAll()
 

@@ -36,8 +36,12 @@ function PatientRegistration() {
         });
 
         if (responseData.userType === 'patient') {
+            localStorage.setItem('jwtToken', responseData.token);
+            console.log(responseData.token);
             navigate('/patientdashboard');
         } else if (responseData.userType === 'doctor') {
+            localStorage.setItem('jwtToken', responseData.token);
+            console.log(responseData.token);
             navigate('/doctordashboard');
         }
     };

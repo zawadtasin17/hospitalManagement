@@ -29,6 +29,7 @@ function PatientRegistration() {
             alert('Invalid login response from server');
             return;
         }
+        //console.log("Login response data:", response.data);
 
         login({
             id: responseData.id,
@@ -38,10 +39,14 @@ function PatientRegistration() {
         if (responseData.userType === 'patient') {
             localStorage.setItem('jwtToken', responseData.token);
             console.log(responseData.token);
+            localStorage.setItem('patientid', responseData.id);
+            console.log(responseData.id);
             navigate('/patientdashboard');
         } else if (responseData.userType === 'doctor') {
             localStorage.setItem('jwtToken', responseData.token);
             console.log(responseData.token);
+            localStorage.setItem('doctorid', responseData.id);
+            console.log(responseData.id);
             navigate('/doctordashboard');
         }
     };

@@ -1,9 +1,25 @@
 import React, { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 
 const PatientAppointment = () => {
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [specialty, setSpecialty] = useState("");
+
+    const token = localStorage.getItem("jwtToken"); // Get JWT token from localStorage
+    const patientId = localStorage.getItem("patientid"); // Get patient ID from localStorage
+
+    // Common fetch helper with Authorization header
+    const fetchWithAuth = (url, options = {}) => {
+        return fetch(url, {
+            ...options,
+            headers: {
+                ...options.headers,
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`, // Attach JWT
+            },
+        });
+    };
 
     const fetchDoctors = (specialtyFilter = "") => {
         setLoading(true);
@@ -11,8 +27,14 @@ const PatientAppointment = () => {
         if (specialtyFilter) {
             url = `http://localhost:8080/patient/doctors/specialty/${specialtyFilter}`;
         }
-        fetch(url)
-            .then((res) => res.json())
+
+        fetchWithAuth(url)
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error(`Error: ${res.status}`);
+                }
+                return res.json();
+            })
             .then((data) => {
                 setDoctors(data);
                 setLoading(false);
@@ -31,6 +53,60 @@ const PatientAppointment = () => {
         const value = e.target.value;
         setSpecialty(value);
         fetchDoctors(value);
+    };
+
+    // 🔹 Find next available date
+    const getNextAvailableDate = (availableDays) => {
+        if (!availableDays || availableDays.length === 0) return null;
+
+        const today = new Date();
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            const dayName = date.toLocaleDateString("en-US", { weekday: "long" }).toUpperCase();
+
+            if (availableDays.includes(dayName)) {
+                return date;
+            }
+        }
+        return null;
+    };
+
+    // 🔹 Book appointment
+    const bookAppointment = (doctor) => {
+        const nextDate = getNextAvailableDate(doctor.availableDays);
+        if (!nextDate) {
+            alert("No available days found for this doctor!");
+            console.log(patientId);
+        console.log("Decoded JWT token:", decoded);
+            return;
+        }
+
+        const [hours, minutes] = doctor.availableFrom.split(":");
+        nextDate.setHours(hours);
+        nextDate.setMinutes(minutes);
+
+        const dateTimeString = nextDate.toISOString().slice(0, 19); // yyyy-MM-ddTHH:mm:ss
+
+        fetchWithAuth("http://localhost:8080/appointments/create", {
+            method: "POST",
+            body: JSON.stringify({
+                doctorId: doctor.id,
+                patientId: patientId,
+                dateTime: dateTimeString,
+            }),
+        })
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error(`Error: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then((data) => {
+                alert(`Appointment booked for ${doctor.name} on ${nextDate}`);
+                console.log("Appointment:", data);
+            })
+            .catch((err) => console.error("Error booking appointment:", err));
     };
 
     if (loading) {
@@ -77,7 +153,6 @@ const PatientAppointment = () => {
                             key={doc.id}
                             className="bg-white shadow-lg rounded-lg p-5 border border-grey-300 hover:shadow-2xl transition-shadow duration-300"
                         >
-                            {/* Name + Image side by side */}
                             <div className="flex items-center justify-between mb-4">
                                 <div>
                                     <h2 className="text-xl font-semibold text-green-700">{doc.name}</h2>
@@ -91,34 +166,28 @@ const PatientAppointment = () => {
                             </div>
 
                             <div className="mt-3">
-                                <p>
-                                    <span className="font-semibold">Email:</span> {doc.email}
-                                </p>
-                                <p>
-                                    <span className="font-semibold">Phone:</span> {doc.phone}
-                                </p>
+                                <p><span className="font-semibold">Email:</span> {doc.email}</p>
+                                <p><span className="font-semibold">Phone:</span> {doc.phone}</p>
                             </div>
 
                             <div className="mt-3">
                                 <p>
                                     <span className="font-semibold text-blue-800">Available Days:</span>{" "}
-                                    <span className="text-grey-600 font-semibold">
-                                        {doc.availableDays?.join(", ")}
-                                    </span>
+                                    <span className="text-grey-600 font-semibold">{doc.availableDays?.join(", ")}</span>
                                 </p>
                                 <p>
                                     <span className="font-semibold text-blue-800">Time:</span>{" "}
-                                    <span className="text-grey-600 font-semibold">
-                                        {doc.availableFrom} - {doc.availableTo}
-                                    </span>
+                                    <span className="text-grey-600 font-semibold">{doc.availableFrom} - {doc.availableTo}</span>
                                 </p>
                             </div>
 
-                            <button className="mt-4 w-full font-semibold bg-blue-600 hover:bg-blue-900 text-white px-4 py-2 rounded hover:transition-shadow duration-300">
+                            <button
+                                onClick={() => bookAppointment(doc)}
+                                className="mt-4 w-full font-semibold bg-blue-600 hover:bg-blue-900 text-white px-4 py-2 rounded hover:transition-shadow duration-300"
+                            >
                                 Book Appointment
                             </button>
                         </div>
-
                     ))}
                 </div>
             )}

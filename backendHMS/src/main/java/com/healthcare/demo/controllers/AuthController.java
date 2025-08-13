@@ -57,6 +57,7 @@ public class AuthController {
                     existingPatient.getName()
             ));
         }
+        System.out.println("Logging in patient: " + existingPatient.getEmail() + ", id: " + existingPatient.getId());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
     }
 

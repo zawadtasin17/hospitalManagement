@@ -68,6 +68,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/doctors/*/profile").authenticated()
 
                         //.requestMatchers(HttpMethod.PUT, "/doctors/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/appointments/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/appointments/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/appointments/**").permitAll()
 

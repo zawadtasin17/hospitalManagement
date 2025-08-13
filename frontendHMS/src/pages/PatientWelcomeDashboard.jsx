@@ -8,6 +8,10 @@ const PatientWelcomeDashboard = () => {
     navigate("/appointment");
   };
 
+  const goToPatientAppointments = () => {
+    navigate("/Patient-appointments");
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
@@ -32,12 +36,21 @@ const PatientWelcomeDashboard = () => {
             Thank you for choosing our healthcare services!
           </p>
 
-          <button
-            onClick={goToAppointment}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200"
-          >
-            Go to Appointment
-          </button>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={goToAppointment}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200"
+            >
+              Take Appointments
+            </button>
+
+            <button
+              onClick={goToPatientAppointments}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200"
+            >
+              Your Appointments
+            </button>
+          </div>
         </div>
       </main>
     </div>

@@ -33,6 +33,7 @@ function PatientRegistration() {
         login({
             id: responseData.id,
             userType: responseData.userType,
+            name: responseData.name,
         });
 
         if (responseData.userType === 'patient') {

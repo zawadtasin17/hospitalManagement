@@ -17,19 +17,24 @@ function PatientRegistration() {
         userAction: 'register', // 'register' or 'login'
     });
 
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value,
         });
+        // clear messages on input change
+        setErrorMessage('');
+        setSuccessMessage('');
     };
 
     const handleLoginSuccess = (responseData) => {
         if (!responseData.id || !responseData.userType) {
-            alert('Invalid login response from server');
+            setErrorMessage('Invalid login response from server');
             return;
         }
-        //console.log("Login response data:", response.data);
 
         login({
             id: responseData.id,
@@ -37,17 +42,12 @@ function PatientRegistration() {
             name: responseData.name,
         });
 
+        localStorage.setItem('jwtToken', responseData.token);
         if (responseData.userType === 'patient') {
-            localStorage.setItem('jwtToken', responseData.token);
-            console.log(responseData.token);
             localStorage.setItem('patientid', responseData.id);
-            console.log(responseData.id);
             navigate('/patientdashboard');
         } else if (responseData.userType === 'doctor') {
-            localStorage.setItem('jwtToken', responseData.token);
-            console.log(responseData.token);
             localStorage.setItem('doctorid', responseData.id);
-            console.log(responseData.id);
             navigate('/doctordashboard');
         }
     };
@@ -57,7 +57,7 @@ function PatientRegistration() {
 
         if (formData.userAction === 'register') {
             if (formData.password !== formData.confirmPassword) {
-                alert("Passwords don't match");
+                setErrorMessage("Passwords don't match");
                 return;
             }
             try {
@@ -72,7 +72,7 @@ function PatientRegistration() {
                     password: formData.password,
                 });
 
-                alert(`${formData.userType === 'patient' ? 'Patient' : 'Doctor'} Registered Successfully!`);
+                setSuccessMessage(`${formData.userType === 'patient' ? 'Patient' : 'Doctor'} Registered Successfully!`);
 
                 setFormData({
                     name: '',
@@ -80,12 +80,17 @@ function PatientRegistration() {
                     phone: '',
                     password: '',
                     confirmPassword: '',
-                    userType: formData.userType, // keep same userType
-                    userAction: 'login', // switch to login after register
+                    userType: formData.userType,
+                    userAction: 'login',
                 });
             } catch (error) {
-                alert('Error registering user');
+                if (error.response && error.response.data) {
+                    setErrorMessage(error.response.data.message || "Error registering user");
+                } else {
+                    setErrorMessage("Error registering user");
+                }
             }
+
         } else if (formData.userAction === 'login') {
             try {
                 const endpoint = formData.userType === 'patient'
@@ -99,11 +104,13 @@ function PatientRegistration() {
 
                 const response = await axios.post(endpoint, loginData);
 
-                alert('Logged in successfully!');
-
                 handleLoginSuccess(response.data);
             } catch (error) {
-                alert('Error logging in');
+                if (error.response && error.response.data) {
+                    setErrorMessage(error.response.data.message || "Error logging in");
+                } else {
+                    setErrorMessage("Error logging in");
+                }
             }
         }
     };
@@ -115,7 +122,7 @@ function PatientRegistration() {
             </h2>
 
             <form onSubmit={handleSubmit}>
-                {/* User Type Selection - Always visible */}
+                {/* User Type Selection */}
                 <div className="mb-4">
                     <label htmlFor="userType" className="block text-sm font-medium text-gray-700">
                         {formData.userAction === 'register' ? 'Register as:' : 'Login as:'}
@@ -132,7 +139,7 @@ function PatientRegistration() {
                     </select>
                 </div>
 
-                {/* Name input only during registration */}
+                {/* Name input */}
                 {formData.userAction === 'register' && (
                     <div className="mb-4">
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
@@ -162,7 +169,7 @@ function PatientRegistration() {
                     />
                 </div>
 
-                {/* Phone input only during registration */}
+                {/* Phone input */}
                 {formData.userAction === 'register' && (
                     <div className="mb-4">
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
@@ -192,7 +199,7 @@ function PatientRegistration() {
                     />
                 </div>
 
-                {/* Confirm Password only during registration */}
+                {/* Confirm Password */}
                 {formData.userAction === 'register' && (
                     <div className="mb-4">
                         <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
@@ -205,6 +212,20 @@ function PatientRegistration() {
                             required
                             className="w-full p-2 border border-gray-300 rounded-md"
                         />
+                    </div>
+                )}
+
+                {/* Error Message */}
+                {errorMessage && (
+                    <div className="mb-4 p-2 text-red-700 bg-red-100 border border-red-400 rounded">
+                        {errorMessage}
+                    </div>
+                )}
+
+                {/* Success Message */}
+                {successMessage && (
+                    <div className="mb-4 p-2 text-green-700 bg-green-100 border border-green-400 rounded">
+                        {successMessage}
                     </div>
                 )}
 

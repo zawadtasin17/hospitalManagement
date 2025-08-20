@@ -14,7 +14,7 @@ import DashboardOverview from './pages/DashboardOverview';
 import PatientAppointment from './pages/PatientAppointment';
 
 import { useAuth } from './context/AuthContext';
-import PatientPastAppointments from "./pages/PatientPastAppointments.jsx";
+import PatientPastAppointments from './pages/PatientPastAppointments';
 
 function App() {
     const { user, loading } = useAuth();
@@ -77,22 +77,17 @@ function App() {
                                 path="/appointment"
                                 element={
                                     user.userType === 'patient' ? (
-                                        <>
                                         <PatientAppointment patientId={user.id} />
-                                        <PatientPastAppointments patientId={user.id} />
-                                        </>
                                     ) : (
                                         <Navigate to="/register" replace />
                                     )
                                 }
                             />
                             <Route
-                                path="/past-appointment"
+                                path="/Patient-appointments"
                                 element={
                                     user.userType === 'patient' ? (
-                                        <>
-                                            <PatientPastAppointments patientId={user.id} />
-                                        </>
+                                        <PatientPastAppointments patientId={user.id} />
                                     ) : (
                                         <Navigate to="/register" replace />
                                     )

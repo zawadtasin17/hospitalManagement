@@ -16,7 +16,7 @@ import PatientAppointment from './pages/PatientAppointment';
 import { useAuth } from './context/AuthContext';
 
 function App() {
-    const { user, loading } = useAuth();  // Added loading state
+    const { user, loading } = useAuth();
 
     if (loading) {
         return (
@@ -26,72 +26,67 @@ function App() {
         );
     }
 
-    if (!user) {
-        // Optionally redirect to register if no user logged in
-        return (
-            <Router>
-                <NavBar />
-                <div className="container mx-auto p-4">
-                    <Routes>
-                        <Route path="/register" element={<PatientRegistration />} />
-                        <Route path="*" element={<Navigate to="/register" replace />} />
-                    </Routes>
-                </div>
-            </Router>
-        );
-    }
-
     return (
         <Router>
             <NavBar />
             <div className="container mx-auto p-4">
                 <Routes>
+                    {/* Home route is always accessible */}
                     <Route path="/" element={<Home />} />
-                    <Route path="/register" element={<PatientRegistration />} />
 
-                    {/* Doctor dashboard with nested routes */}
-                    <Route
-                        path="/doctordashboard/*"
-                        element={
-                            user.userType === 'doctor' ? (
-                                <DoctorDashboard />
-                            ) : (
-                                <PatientDashboard patientId={user.id} />
-                            )
-                        }
-                    >
-                        {/* Nested routes */}
-                        <Route index element={<DoctorProfile doctorId={user.id} />} />
-                        <Route path="profile" element={<DoctorProfile doctorId={user.id} />} />
-                        <Route path="appointments" element={<UpcomingAppointments doctorId={user.id} />} />
-                        <Route path="stats" element={<AppointmentStats doctorId={user.id} />} />
-                        <Route path="dashboard" element={<DashboardOverview doctorId={user.id} />} />
-                    </Route>
+                    {!user ? (
+                        <>
+                            <Route path="/register" element={<PatientRegistration />} />
+                            <Route path="*" element={<Navigate to="/register" replace />} />
+                        </>
+                    ) : (
+                        <>
+                            <Route path="/register" element={<PatientRegistration />} />
 
-                    {/* Patient routes */}
-                    <Route
-                        path="/patientdashboard"
-                        element={
-                            user.userType === 'patient' ? (
-                                <PatientWelcomeDashboard patientId={user.id} />
-                            ) : (
-                                <Navigate to="/register" replace />
-                            )
-                        }
-                    />
-                    <Route
-                        path="/appointment"
-                        element={
-                            user.userType === 'patient' ? (
-                                <PatientAppointment patientId={user.id} />
-                            ) : (
-                                <Navigate to="/register" replace />
-                            )
-                        }
-                    />
+                            {/* Doctor dashboard with nested routes */}
+                            <Route
+                                path="/doctordashboard/*"
+                                element={
+                                    user.userType === 'doctor' ? (
+                                        <DoctorDashboard />
+                                    ) : (
+                                        <PatientDashboard patientId={user.id} />
+                                    )
+                                }
+                            >
+                                <Route index element={<DoctorProfile doctorId={user.id} />} />
+                                <Route path="profile" element={<DoctorProfile doctorId={user.id} />} />
+                                <Route path="appointments" element={<UpcomingAppointments doctorId={user.id} />} />
+                                <Route path="stats" element={<AppointmentStats doctorId={user.id} />} />
+                                <Route path="dashboard" element={<DashboardOverview doctorId={user.id} />} />
+                            </Route>
 
-                    {/* Catch all unmatched routes */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                            {/* Patient routes */}
+                            <Route
+                                path="/patientdashboard"
+                                element={
+                                    user.userType === 'patient' ? (
+                                        <PatientWelcomeDashboard patientId={user.id} />
+                                    ) : (
+                                        <Navigate to="/register" replace />
+                                    )
+                                }
+                            />
+                            <Route
+                                path="/appointment"
+                                element={
+                                    user.userType === 'patient' ? (
+                                        <PatientAppointment patientId={user.id} />
+                                    ) : (
+                                        <Navigate to="/register" replace />
+                                    )
+                                }
+                            />
+
+                            {/* Catch-all unmatched routes for logged in users redirects to home */}
+                            <Route path="*" element={<Navigate to="/" replace />} />
+                        </>
+                    )}
                 </Routes>
             </div>
         </Router>

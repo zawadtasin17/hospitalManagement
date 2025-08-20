@@ -69,7 +69,7 @@ const PatientWelcomeDashboard = () => {
               </div>
             </div>
 
-            <div className="flex justify-center mt-5">
+            <div className="flex justify-center mt-10">
               <button
                   onClick={logout}
                   className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-5 py-2 rounded-lg text-white font-semibold shadow-md transition duration-200"

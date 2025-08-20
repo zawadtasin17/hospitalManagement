@@ -13,7 +13,7 @@ const PatientWelcomeDashboard = () => {
   };
 
   const goToPatientAppointments = () => {
-    navigate("/Patient-appointments");
+    navigate("/past-appointment");
   };
 
   return (

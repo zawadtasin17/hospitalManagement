@@ -9,7 +9,7 @@ function Home() {
             <section className="relative bg-gradient-to-r from-blue-600 via-teal-500 to-green-500 text-white text-center p-20 overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
                 <h2 className="text-5xl font-extrabold mb-6 tracking-tight drop-shadow-lg">
-                    AI-Powered Healthcare Management System
+                    Healthcare Management System
                 </h2>
                 <p className="text-xl max-w-3xl mx-auto mb-8 opacity-90">
                     Streamline patient care, doctor management, and appointment scheduling

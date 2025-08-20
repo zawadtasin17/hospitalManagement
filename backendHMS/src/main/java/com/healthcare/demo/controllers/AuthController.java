@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,18 +32,37 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    record ErrorResponse(String message, int statusCode) {}
+    record SuccessResponse(String message) {}
+
     @PostMapping("/register/patient")
-    public String registerPatient(@RequestBody Patient patient) {
+    public ResponseEntity<Object> registerPatient(@RequestBody Patient patient) {
+        // check if email already exists
+        Patient existingPatient = patientRepository.findByEmail(patient.getEmail());
+        if (existingPatient != null) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponse("Email already registered!", HttpStatus.CONFLICT.value()));
+        }
+
         patient.setPassword(passwordEncoder.encode(patient.getPassword()));
         authService.registerPatient(patient);
-        return "Patient Registered Successfully!";
+        return ResponseEntity.ok(new SuccessResponse("Patient Registered Successfully!"));
     }
 
     @PostMapping("/register/doctor")
-    public String registerDoctor(@RequestBody Doctor doctor) {
+    public ResponseEntity<Object> registerDoctor(@RequestBody Doctor doctor) {
+        // check if email already exists
+        Doctor existingDoctor = doctorRepository.findByEmail(doctor.getEmail());
+        if (existingDoctor != null) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponse("Email already registered!", HttpStatus.CONFLICT.value()));
+        }
+
         doctor.setPassword(passwordEncoder.encode(doctor.getPassword()));
         authService.registerDoctor(doctor);
-        return "Doctor Registered Successfully!";
+        return ResponseEntity.ok(new SuccessResponse("Doctor Registered Successfully!"));
     }
 
     @PostMapping("/login/patient")

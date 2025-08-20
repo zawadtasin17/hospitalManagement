@@ -10,15 +10,14 @@ const PatientAppointment = () => {
     const patientId = localStorage.getItem("patientid"); // Get patient ID from localStorage
 
     // Common fetch helper with Authorization header
-    const fetchWithAuth = (url, options = {}) => {
-        return fetch(url, {
-            ...options,
-            headers: {
-                ...options.headers,
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`, // Attach JWT
-            },
-        });
+    const fetchWithAuth = (url, options = {}, requireAuth = true) => {
+        const headers = {
+            "Content-Type": "application/json",
+            ...(requireAuth && { Authorization: `Bearer ${token}` }),
+            ...options.headers,
+        };
+
+        return fetch(url, { ...options, headers });
     };
 
     const fetchDoctors = (specialtyFilter = "") => {
@@ -28,7 +27,7 @@ const PatientAppointment = () => {
             url = `http://localhost:8080/patient/doctors/specialty/${specialtyFilter}`;
         }
 
-        fetchWithAuth(url)
+        fetchWithAuth(url, {}, false)
             .then((res) => {
                 if (!res.ok) {
                     throw new Error(`Error: ${res.status}`);
@@ -78,7 +77,7 @@ const PatientAppointment = () => {
         if (!nextDate) {
             alert("No available days found for this doctor!");
             console.log(patientId);
-        console.log("Decoded JWT token:", decoded);
+            console.log("Decoded JWT token:", decoded);
             return;
         }
 

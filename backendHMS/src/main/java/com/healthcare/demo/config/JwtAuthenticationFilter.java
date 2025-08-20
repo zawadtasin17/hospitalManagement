@@ -33,12 +33,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = request.getHeader("Authorization");
 
         if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7); // Remove "Bearer " prefix
+            token = token.substring(7);
             String username = jwtUtil.extractUsername(token);
+            String tokenType = jwtUtil.extractTokenType(token);
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null &&
-                    jwtUtil.validateToken(token, username)) { // Validate token here
-                // Create authentication token
+            if ("access".equals(tokenType) && username != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null &&
+                    jwtUtil.validateToken(token, username)) {
+
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
                 SecurityContextHolder.getContext().setAuthentication(authentication);

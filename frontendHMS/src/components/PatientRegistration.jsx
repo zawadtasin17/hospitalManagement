@@ -42,7 +42,8 @@ function PatientRegistration() {
             name: responseData.name,
         });
 
-        localStorage.setItem('jwtToken', responseData.token);
+        localStorage.setItem('jwtToken', responseData.accessToken);
+        console.log(responseData.accessToken);
         if (responseData.userType === 'patient') {
             localStorage.setItem('patientid', responseData.id);
             navigate('/patientdashboard');

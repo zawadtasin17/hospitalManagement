@@ -8,12 +8,21 @@ function DoctorProfile({ doctorId }) {
 
   const BASE_URL = 'http://localhost:8080/doctors';
 
+  const token = localStorage.getItem('jwtToken');
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const res = await axios.get(`${BASE_URL}/${doctorId}/profile`);
+        const res = await axios.get(`${BASE_URL}/${doctorId}/profile`, config);
         setProfile(res.data);
         setEditProfileData(res.data);
+        console.log('JWT token:', token);
       } catch (error) {
         alert('Failed to load profile');
       }
@@ -33,7 +42,7 @@ function DoctorProfile({ doctorId }) {
 
   const handleSaveProfile = async () => {
     try {
-      const res = await axios.put(`${BASE_URL}/${doctorId}/profile`, editProfileData);
+      const res = await axios.put(`${BASE_URL}/${doctorId}/profile`, editProfileData, config);
       setProfile(res.data);
       setEditMode(false);
       alert('Profile updated successfully!');
@@ -72,11 +81,11 @@ function DoctorProfile({ doctorId }) {
           }}
           className="space-y-5"
         >
+          {/* Keep these three inputs as before */}
           {[
             { label: 'Name', name: 'name', type: 'text' },
             { label: 'Email', name: 'email', type: 'email' },
             { label: 'Phone', name: 'phone', type: 'text' },
-            { label: 'Specialty', name: 'specialty', type: 'text' },
           ].map(({ label, name, type }) => (
             <label key={name} className="block">
               <span className="text-gray-700 font-semibold mb-1 block">{label}:</span>
@@ -91,19 +100,82 @@ function DoctorProfile({ doctorId }) {
             </label>
           ))}
 
+          {/* Specialty as select */}
           <label className="block">
-            <span className="text-gray-700 font-semibold mb-1 block">
-              Available Days <span className="text-sm font-normal">(comma separated)</span>:
-            </span>
-            <input
-              type="text"
-              name="availableDays"
-              value={editProfileData.availableDays?.join(', ') || ''}
-              onChange={handleAvailableDaysChange}
+            <span className="text-gray-700 font-semibold mb-1 block">Specialty:</span>
+            <select
+              name="specialty"
+              value={editProfileData.specialty || ''}
+              onChange={handleInputChange}
               className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              placeholder="e.g. Monday, Wednesday, Friday"
-            />
+              required
+            >
+              <option value="" disabled>
+                Select Specialty
+              </option>
+              {[
+                "CARDIOLOGY",
+                "DERMATOLOGY",
+                "NEUROLOGY",
+                "PEDIATRICS",
+                "GENERAL_PHYSICIAN",
+                "ORTHOPEDICS",
+                "PSYCHIATRY",
+                "ONCOLOGY",
+                "GYNECOLOGY",
+                "UROLOGY",
+                "ENT",
+                "GASTROENTEROLOGY",
+              ].map((spec) => (
+                <option key={spec} value={spec}>
+                  {spec.replace('_', ' ')}
+                </option>
+              ))}
+            </select>
           </label>
+
+          {/* Available Days as multiple select */}
+          <label className="block">
+            <span className="text-gray-700 font-semibold mb-1 block">Available Days:</span>
+            <div className="flex flex-wrap gap-3">
+              {[
+                "SATURDAY",
+                "SUNDAY",
+                "MONDAY",
+                "TUESDAY",
+                "WEDNESDAY",
+                "THURSDAY",
+                "FRIDAY",
+              ].map((day) => {
+                const isChecked = editProfileData.availableDays?.includes(day) || false;
+                return (
+                  <label key={day} className="inline-flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      name="availableDays"
+                      value={day}
+                      checked={isChecked}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setEditProfileData((prev) => {
+                          let newDays = prev.availableDays ? [...prev.availableDays] : [];
+                          if (checked) {
+                            if (!newDays.includes(day)) newDays.push(day);
+                          } else {
+                            newDays = newDays.filter((d) => d !== day);
+                          }
+                          return { ...prev, availableDays: newDays };
+                        });
+                      }}
+                      className="form-checkbox h-5 w-5 text-blue-600"
+                    />
+                    <span>{day.charAt(0) + day.slice(1).toLowerCase()}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </label>
+
 
           <div className="grid grid-cols-2 gap-6">
             <label className="block">

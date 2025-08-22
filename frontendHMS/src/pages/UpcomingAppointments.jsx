@@ -20,12 +20,22 @@ function UpcomingAppointments({ doctorId }) {
     async function fetchAppointments() {
       try {
         setLoading(true);
-        const res = await axios.get(`${BASE_URL}/doctors/${doctorId}/appointments/upcoming`);
+        const token = localStorage.getItem("jwtToken"); // check your login code, maybe it's "token"
+        const res = await axios.get(
+          `${BASE_URL}/appointments/doctor/${doctorId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Fetched appointments:", res.data);
         setAppointments(res.data);
-        localStorage.setItem('appointments', JSON.stringify(res.data)); // Save fresh data
+        localStorage.setItem("appointments", JSON.stringify(res.data));
         setLoading(false);
       } catch (err) {
-        setError('Failed to load upcoming appointments.');
+        console.error(err);
+        setError("Failed to load upcoming appointments.");
         setLoading(false);
       }
     }
@@ -117,10 +127,9 @@ function UpcomingAppointments({ doctorId }) {
                     </>
                   ) : (
                     <span
-                      className={`font-semibold ${
-                        appt.status === 'Completed' ? 'text-green-600' :
+                      className={`font-semibold ${appt.status === 'Completed' ? 'text-green-600' :
                         appt.status === 'Cancelled' ? 'text-gray-500 italic' : ''
-                      }`}
+                        }`}
                     >
                       {appt.status}
                     </span>

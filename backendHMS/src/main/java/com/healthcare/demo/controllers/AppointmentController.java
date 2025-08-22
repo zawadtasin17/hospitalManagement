@@ -92,5 +92,6 @@ public class AppointmentController {
                 .map(AppointmentMapper::toDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(appointments);
+
     }
 }

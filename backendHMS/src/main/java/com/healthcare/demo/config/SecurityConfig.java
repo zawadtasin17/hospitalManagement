@@ -72,6 +72,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/appointments/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/appointments/**").permitAll()
 
+                        //Prescription Endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/prescriptions/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/prescriptions/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/prescriptions/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(authenticationManager, jwtUtil), UsernamePasswordAuthenticationFilter.class)

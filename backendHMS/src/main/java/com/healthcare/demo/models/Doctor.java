@@ -1,6 +1,5 @@
 package com.healthcare.demo.models;
 
-//import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.healthcare.demo.enums.Specialty;

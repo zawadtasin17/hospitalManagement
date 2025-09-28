@@ -7,41 +7,29 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class Prescription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String medicineName;
-    private String dosage;
-    private String instructions;
-    private LocalDate prescribedDate;
+    private Long doctorId;
+    private Long patientId;
 
-    // Relationships
-    @ManyToOne
-    @JoinColumn(name = "doctor_id", nullable = false)
-    @JsonIgnore
-    private Doctor doctor;
+    private String notes;
 
-    @ManyToOne
-    @JoinColumn(name = "patient_id", nullable = false)
-    @JsonIgnore
-    private Patient patient;
+    @Lob
+    @Column(columnDefinition = "BYTEA")  // PostgreSQL binary type
+    private byte[] fileData;
 
-    // Constructors
-    public Prescription() {}
+    private String fileType; // e.g. "application/pdf", "image/png"
+    private String fileName;
 
-    public Prescription(String medicineName, String dosage, String instructions, LocalDate prescribedDate, Doctor doctor, Patient patient) {
-        this.medicineName = medicineName;
-        this.dosage = dosage;
-        this.instructions = instructions;
-        this.prescribedDate = prescribedDate;
-        this.doctor = doctor;
-        this.patient = patient;
-    }
+    private LocalDateTime createdAt = LocalDateTime.now();
 
 }

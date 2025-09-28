@@ -3,9 +3,13 @@ package com.healthcare.demo.controllers;
 import com.healthcare.demo.dto.PrescriptionDTO;
 import com.healthcare.demo.models.Prescription;
 import com.healthcare.demo.services.PrescriptionService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -17,59 +21,53 @@ public class PrescriptionController {
         this.prescriptionService = prescriptionService;
     }
 
-    @PostMapping("/doctor/{doctorId}/patient/{patientId}")
-    public ResponseEntity<Prescription> createPrescription(
-            @PathVariable Long doctorId,
-            @PathVariable Long patientId,
-            @RequestBody Prescription prescription) {
+    // Upload Prescription (Doctor adds prescription)
+    @PostMapping("/upload")
+    public ResponseEntity<Prescription> uploadPrescription(
+            @RequestParam Long doctorId,
+            @RequestParam Long patientId,
+            @RequestParam(required = false) String notes,
+            @RequestParam("file") MultipartFile file) throws IOException {
 
-        Prescription savedPrescription = prescriptionService.savePrescription(doctorId, patientId, prescription);
-        return ResponseEntity.ok(savedPrescription);
+        Prescription prescription = new Prescription();
+        prescription.setDoctorId(doctorId);
+        prescription.setPatientId(patientId);
+        prescription.setNotes(notes);
+        prescription.setFileName(file.getOriginalFilename());
+        prescription.setFileType(file.getContentType());
+        prescription.setFileData(file.getBytes());
+
+        Prescription saved = prescriptionService.savePrescription(prescription);
+        return ResponseEntity.ok(saved);
     }
 
+    // Get All Prescriptions
     @GetMapping
-    public ResponseEntity<List<PrescriptionDTO>> getAllPrescriptions() {
-        List<PrescriptionDTO> result = prescriptionService.getAllPrescriptions().stream()
-                .map(p -> new PrescriptionDTO(
-                        p.getId(),
-                        p.getMedicineName(),
-                        p.getDosage(),
-                        p.getInstructions(),
-                        p.getPrescribedDate(),
-                        p.getDoctor().getId(),
-                        p.getPatient().getId()
-                ))
-                .toList();
-        return ResponseEntity.ok(result);
+    public ResponseEntity<List<Prescription>> getAll() {
+        return ResponseEntity.ok(prescriptionService.getAllPrescriptions());
     }
 
+    // Get Prescription by ID
     @GetMapping("/{id}")
-    public ResponseEntity<PrescriptionDTO> getPrescriptionById(@PathVariable Long id) {
-        return prescriptionService.getPrescriptionById(id)
-                .map(p -> ResponseEntity.ok(new PrescriptionDTO(
-                        p.getId(),
-                        p.getMedicineName(),
-                        p.getDosage(),
-                        p.getInstructions(),
-                        p.getPrescribedDate(),
-                        p.getDoctor().getId(),
-                        p.getPatient().getId()
-                )))
-                .orElse(ResponseEntity.notFound().build());
-    }
-    @GetMapping("/patient/{patientId}")
-    public ResponseEntity<List<Prescription>> getPrescriptionsByPatient(@PathVariable Long patientId) {
-        return ResponseEntity.ok(prescriptionService.getPrescriptionsByPatient(patientId));
+    public ResponseEntity<Prescription> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(prescriptionService.getPrescriptionById(id));
     }
 
-    @GetMapping("/doctor/{doctorId}")
-    public ResponseEntity<List<Prescription>> getPrescriptionsByDoctor(@PathVariable Long doctorId) {
-        return ResponseEntity.ok(prescriptionService.getPrescriptionsByDoctor(doctorId));
+    // Download Prescription File
+    @GetMapping("/{id}/download")
+    public ResponseEntity<byte[]> downloadPrescription(@PathVariable Long id) {
+        Prescription prescription = prescriptionService.getPrescriptionById(id);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + prescription.getFileName() + "\"")
+                .contentType(MediaType.parseMediaType(prescription.getFileType()))
+                .body(prescription.getFileData());
     }
 
+    // Delete Prescription
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePrescription(@PathVariable Long id) {
+    public ResponseEntity<String> delete(@PathVariable Long id) {
         prescriptionService.deletePrescription(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Prescription deleted successfully");
     }
 }

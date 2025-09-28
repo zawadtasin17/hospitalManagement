@@ -17,5 +17,5 @@ public class PrescriptionDTO {
     private LocalDate prescribedDate;
     private Long doctorId;
     private Long patientId;
-    
+
 }

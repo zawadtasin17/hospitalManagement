@@ -14,47 +14,22 @@ import java.util.Optional;
 @Service
 public class PrescriptionService {
     private final PrescriptionRepository prescriptionRepository;
-    private final DoctorRepository doctorRepository;
-    private final PatientRepository patientRepository;
 
-    public PrescriptionService(PrescriptionRepository prescriptionRepository,
-                               DoctorRepository doctorRepository,
-                               PatientRepository patientRepository) {
+    public PrescriptionService(PrescriptionRepository prescriptionRepository) {
         this.prescriptionRepository = prescriptionRepository;
-        this.doctorRepository = doctorRepository;
-        this.patientRepository = patientRepository;
     }
 
-    public Prescription savePrescription(Long doctorId, Long patientId, Prescription prescription) {
-        // Validate doctor
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + doctorId));
-
-        // Validate patient
-        Patient patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + patientId));
-
-        // Attach relationships
-        prescription.setDoctor(doctor);
-        prescription.setPatient(patient);
-
+    public Prescription savePrescription(Prescription prescription) {
         return prescriptionRepository.save(prescription);
+    }
+
+    public Prescription getPrescriptionById(Long id) {
+        return prescriptionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Prescription not found with id " + id));
     }
 
     public List<Prescription> getAllPrescriptions() {
         return prescriptionRepository.findAll();
-    }
-
-    public List<Prescription> getPrescriptionsByPatient(Long patientId) {
-        return prescriptionRepository.findByPatientId(patientId);
-    }
-
-    public List<Prescription> getPrescriptionsByDoctor(Long doctorId) {
-        return prescriptionRepository.findByDoctorId(doctorId);
-    }
-
-    public Optional<Prescription> getPrescriptionById(Long id) {
-        return prescriptionRepository.findById(id);
     }
 
     public void deletePrescription(Long id) {

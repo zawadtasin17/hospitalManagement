@@ -15,6 +15,7 @@ import PatientAppointment from './pages/PatientAppointment';
 
 import { useAuth } from './context/AuthContext';
 import PatientPastAppointments from './pages/PatientPastAppointments';
+import Prescription from './pages/Prescription';
 
 function App() {
     const { user, loading } = useAuth();
@@ -60,6 +61,7 @@ function App() {
                                 <Route path="appointments" element={<UpcomingAppointments doctorId={user.id} />} />
                                 <Route path="stats" element={<AppointmentStats doctorId={user.id} />} />
                                 <Route path="dashboard" element={<DashboardOverview doctorId={user.id} />} />
+                                <Route path="prescriptions/:patientId" element={<Prescription />} />
                             </Route>
 
                             {/* Patient routes */}

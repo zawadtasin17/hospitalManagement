@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function UpcomingAppointments({ doctorId }) {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const BASE_URL = 'http://localhost:8080';
 
@@ -123,6 +125,12 @@ function UpcomingAppointments({ doctorId }) {
                         onClick={() => updateAppointmentStatus(appt.id, 'Completed')}
                       >
                         Complete
+                      </button>
+                      <button
+                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                         onClick={() => navigate(`/doctordashboard/prescriptions/${appt.patient?.id}`)}
+                      >
+                        Prescription
                       </button>
                     </>
                   ) : (

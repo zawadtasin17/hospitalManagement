@@ -2,34 +2,40 @@ package com.healthcare.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
 
 @Entity
-@Data
-@AllArgsConstructor
+@Table(name = "prescription")
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Prescription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
+    @Column(name = "doctor_id", nullable = false, insertable = true, updatable = true)
     private Long doctorId;
+
+    @Column(name = "patient_id", nullable = false, insertable = true, updatable = true)
     private Long patientId;
 
+    @Column(name = "notes", columnDefinition = "TEXT", insertable = true, updatable = true)
     private String notes;
 
-    @Lob
-    @Column(columnDefinition = "BYTEA")  // PostgreSQL binary type
-    private byte[] fileData;
-
-    private String fileType; // e.g. "application/pdf", "image/png"
+    @Column(name = "file_name", insertable = true, updatable = true)
     private String fileName;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "file_type", insertable = true, updatable = true)
+    private String fileType;
 
+    @JsonIgnore
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "file_data", columnDefinition = "BYTEA", insertable = true, updatable = true)
+    private byte[] fileData;
 }

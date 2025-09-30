@@ -11,11 +11,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class PrescriptionDTO {
     private Long id;
-    private String medicineName;
-    private String dosage;
-    private String instructions;
-    private LocalDate prescribedDate;
     private Long doctorId;
     private Long patientId;
-
+    private String notes;
+    private String fileName;
+    private String fileType;
+    // no fileData
 }

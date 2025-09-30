@@ -73,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/appointments/**").permitAll()
 
                         //Prescription Endpoints
+                        .requestMatchers("/error").permitAll()  // ADD THIS
                         .requestMatchers(HttpMethod.GET, "/api/prescriptions/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/prescriptions/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/prescriptions/**").authenticated()

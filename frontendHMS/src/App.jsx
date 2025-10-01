@@ -16,6 +16,7 @@ import PatientAppointment from './pages/PatientAppointment';
 import { useAuth } from './context/AuthContext';
 import PatientPastAppointments from './pages/PatientPastAppointments';
 import Prescription from './pages/Prescription';
+import PatientPrescriptions from './pages/PatientPrescriptions';
 
 function App() {
     const { user, loading } = useAuth();
@@ -95,6 +96,7 @@ function App() {
                                     )
                                 }
                             />
+                            <Route path="/patient/prescriptions/:id" element={<PatientPrescriptions />} />
 
                             {/* Catch-all unmatched routes for logged in users redirects to home */}
                             <Route path="*" element={<Navigate to="/" replace />} />

@@ -33,6 +33,20 @@ const PatientPastAppointments = () => {
       {appointments.length === 0 ? (
         <p>No previous appointments found.</p>
       ) : (
+        // <ul className="space-y-3">
+        //   {appointments.map((app) => (
+        //     <li key={app.id} className="p-3 border rounded shadow">
+        //       <p><strong>Doctor:</strong> {app.doctor?.name || "Unknown"}</p>
+        //       <p>
+        //         <strong>Date:</strong>{" "}
+        //         {app.appointmentDateTime
+        //           ? new Date(app.appointmentDateTime).toLocaleString()
+        //           : "N/A"}
+        //       </p>
+        //       <p><strong>Status:</strong> {app.status}</p>
+        //     </li>
+        //   ))}
+        // </ul>
         <ul className="space-y-3">
           {appointments.map((app) => (
             <li key={app.id} className="p-3 border rounded shadow">
@@ -44,6 +58,14 @@ const PatientPastAppointments = () => {
                   : "N/A"}
               </p>
               <p><strong>Status:</strong> {app.status}</p>
+
+              {/* Prescription Button */}
+              <button
+                className="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                onClick={() => navigate(`/patient/prescriptions/${patientId}`)}
+              >
+                View Prescription
+              </button>
             </li>
           ))}
         </ul>

@@ -4,6 +4,11 @@ import com.healthcare.demo.dto.AppointmentDto;
 import com.healthcare.demo.dto.AppointmentRequestDto;
 import com.healthcare.demo.enums.Status;
 import com.healthcare.demo.models.Appointment;
+import com.healthcare.demo.models.Doctor;
+import com.healthcare.demo.models.Patient;
+import com.healthcare.demo.repositories.AppointmentRepository;
+import com.healthcare.demo.repositories.DoctorRepository;
+import com.healthcare.demo.repositories.PatientRepository;
 import com.healthcare.demo.services.AppointmentService;
 import com.healthcare.demo.mapper.AppointmentMapper;
 
@@ -21,9 +26,15 @@ import java.util.stream.Collectors;
 public class AppointmentController {
     private final AppointmentService appointmentService;
 
-    public AppointmentController(AppointmentService appointmentService) {
+    public AppointmentController(AppointmentService appointmentService, AppointmentRepository appointmentRepository, DoctorRepository doctorRepository, PatientRepository patientRepository) {
         this.appointmentService = appointmentService;
+        this.appointmentRepository = appointmentRepository;
+        this.doctorRepository = doctorRepository;
+        this.patientRepository = patientRepository;
     }
+    private final AppointmentRepository appointmentRepository;
+    private final DoctorRepository doctorRepository;
+    private final PatientRepository patientRepository;
 
     @PostMapping("/create")
     public ResponseEntity<?> createAppointment(@RequestBody AppointmentRequestDto dto) {
@@ -35,7 +46,7 @@ public class AppointmentController {
                     appointmentTime
             );
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(AppointmentMapper.toDto(appointment)); // Always returns JSON
+                    .body(AppointmentMapper.toDto(appointment));
         } catch (DateTimeParseException e) {
             return ResponseEntity.badRequest().body("Invalid date format. Please use ISO_LOCAL_DATE_TIME.");
         } catch (Exception e) {

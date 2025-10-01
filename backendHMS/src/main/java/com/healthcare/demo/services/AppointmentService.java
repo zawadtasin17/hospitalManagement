@@ -31,19 +31,49 @@ public class AppointmentService {
         this.doctorRepository = doctorRepository;
     }
 
-    // Create appointment
-    public Appointment createAppointment(Long doctorId, Long patientId, LocalDateTime dateTime) {
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + doctorId));
+//    // Create appointment
+//    public Appointment createAppointment(Long doctorId, Long patientId, LocalDateTime dateTime) {
+//        Doctor doctor = doctorRepository.findById(doctorId)
+//                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + doctorId));
+//
+//        Patient patient = patientRepository.findById(patientId)
+//                .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + patientId));
+//
+//        Appointment appointment = new Appointment();
+//        appointment.setDoctor(doctor);
+//        appointment.setPatient(patient);
+//        appointment.setAppointmentDateTime(dateTime);
+//        appointment.setStatus(Status.Scheduled);  // Use enum
+//
+//        return appointmentRepository.save(appointment);
+//    }
 
+    public Appointment createAppointment(Long doctorId, Long patientId, LocalDateTime appointmentTime) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
         Patient patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + patientId));
+                .orElseThrow(() -> new RuntimeException("Patient not found"));
+
+        // Rule 1: One active appointment per doctor
+        List<Appointment> existingAppointments =
+                appointmentRepository.findByDoctorAndPatientAndStatus(doctor, patient, Status.Scheduled);
+
+        if (!existingAppointments.isEmpty()) {
+            throw new RuntimeException("You already have a scheduled appointment with this doctor.");
+        }
+
+        // Rule 2: Max 3 active appointments in total
+        long activeAppointments = appointmentRepository.countByPatientAndStatus(patient, Status.Scheduled);
+
+        if (activeAppointments >= 3) {
+            throw new RuntimeException("You cannot book more than 3 active appointments.");
+        }
 
         Appointment appointment = new Appointment();
         appointment.setDoctor(doctor);
         appointment.setPatient(patient);
-        appointment.setAppointmentDateTime(dateTime);
-        appointment.setStatus(Status.Scheduled);  // Use enum
+        appointment.setAppointmentDateTime(appointmentTime);
+        appointment.setStatus(Status.Scheduled);
 
         return appointmentRepository.save(appointment);
     }

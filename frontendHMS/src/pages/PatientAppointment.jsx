@@ -87,6 +87,25 @@ const PatientAppointment = () => {
 
         const dateTimeString = nextDate.toISOString().slice(0, 19); // yyyy-MM-ddTHH:mm:ss
 
+        // fetchWithAuth("http://localhost:8080/appointments/create", {
+        //     method: "POST",
+        //     body: JSON.stringify({
+        //         doctorId: doctor.id,
+        //         patientId: patientId,
+        //         dateTime: dateTimeString,
+        //     }),
+        // })
+        //     .then((res) => {
+        //         if (!res.ok) {
+        //             throw new Error(`Error: ${res.status}`);
+        //         }
+        //         return res.json();
+        //     })
+        //     .then((data) => {
+        //         alert(`Appointment booked for ${doctor.name} on ${nextDate}`);
+        //         console.log("Appointment:", data);
+        //     })
+        //     .catch((err) => console.error("Error booking appointment:", err));
         fetchWithAuth("http://localhost:8080/appointments/create", {
             method: "POST",
             body: JSON.stringify({
@@ -97,15 +116,20 @@ const PatientAppointment = () => {
         })
             .then((res) => {
                 if (!res.ok) {
-                    throw new Error(`Error: ${res.status}`);
+                    return res.text().then((message) => {
+                        throw new Error(message || `Error: ${res.status}`);
+                    });
                 }
                 return res.json();
             })
             .then((data) => {
-                alert(`Appointment booked for ${doctor.name} on ${nextDate}`);
+                alert(`✅ Appointment booked with ${doctor.name} on ${nextDate}`);
                 console.log("Appointment:", data);
             })
-            .catch((err) => console.error("Error booking appointment:", err));
+            .catch((err) => {
+                alert(`❌ Failed to book: ${err.message}`);
+                console.error("Error booking appointment:", err);
+            });
     };
 
     if (loading) {

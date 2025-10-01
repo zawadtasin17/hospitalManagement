@@ -99,18 +99,18 @@ function UpcomingAppointments({ doctorId }) {
         <table className="w-full table-auto bg-white rounded-lg shadow-md">
           <thead>
             <tr className="bg-gray-100">
-              <th className="p-2 text-left">Patient Name</th>
-              <th className="p-2 text-left">Date & Time</th>
-              <th className="p-2 text-left">Status</th>
-              <th className="p-2 text-left">Actions</th>
+              <th className="p-2 text-center">Patient Name</th>
+              <th className="p-2 text-center">Date & Time</th>
+              <th className="p-2 text-center">Status</th>
+              <th className="p-2 text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
             {appointments.map((appt) => (
               <tr key={appt.id} className="border-b">
-                <td className="p-2">{appt.patient?.name || 'N/A'}</td>
-                <td className="p-2">{formatDateTime(appt.appointmentDateTime)}</td>
-                <td className="p-2">{appt.status || 'Scheduled'}</td>
+                <td className="p-2 text-center">{appt.patient?.name || 'N/A'}</td>
+                <td className="p-2 text-center">{formatDateTime(appt.appointmentDateTime)}</td>
+                <td className="p-2 text-center">{appt.status || 'Scheduled'}</td>
                 <td className="p-2 space-x-2">
                   {appt.status === 'Scheduled' ? (
                     <>
@@ -128,19 +128,31 @@ function UpcomingAppointments({ doctorId }) {
                       </button>
                       <button
                         className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                         onClick={() => navigate(`/doctordashboard/prescriptions/${appt.patient?.id}`)}
+                        onClick={() => navigate(`/doctordashboard/prescriptions/${appt.patient?.id}`)}
                       >
                         Prescription
                       </button>
                     </>
                   ) : (
-                    <span
-                      className={`font-semibold ${appt.status === 'Completed' ? 'text-green-600' :
-                        appt.status === 'Cancelled' ? 'text-gray-500 italic' : ''
+                    <div
+                      className={`font-semibold text-center ${appt.status === "Completed"
+                          ? "text-green-600"
+                          : appt.status === "Cancelled"
+                            ? "text-gray-500 italic"
+                            : ""
                         }`}
                     >
                       {appt.status}
-                    </span>
+                      <br />
+                      <button
+                        className="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                        onClick={() => navigate(`/doctordashboard/prescriptions/${appt.patient?.id}`)}
+                      >
+                        Prescription
+                      </button>
+                    </div>
+
+
                   )}
                 </td>
               </tr>

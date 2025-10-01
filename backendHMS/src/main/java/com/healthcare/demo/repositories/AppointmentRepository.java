@@ -16,5 +16,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByPatient(Patient patient);
 
     // New method to get upcoming appointments by doctor ordered by appointment date/time
-    List<Appointment> findByDoctorAndAppointmentDateTimeAfterAndStatusOrderByAppointmentDateTimeAsc(Doctor doctor, LocalDateTime now, Status status);
+    List<Appointment> findByDoctorAndAppointmentDateTimeAfterAndStatusOrderByAppointmentDateTimeAsc(
+            Doctor doctor, LocalDateTime now, Status status);
+
+    // Check if patient already has an active appointment with this doctor
+    List<Appointment> findByDoctorAndPatientAndStatus(Doctor doctor, Patient patient, Status status);
+
+    // Count how many active appointments a patient has (with any doctor)
+    long countByPatientAndStatus(Patient patient, Status status);
+
 }
+

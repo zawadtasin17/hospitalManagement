@@ -119,13 +119,14 @@ const Prescription = () => {
       <h2 className="text-xl font-semibold mb-3">
         Prescriptions for Patient #{patientId}
       </h2>
-      <table className="w-full border">
+      <table className="w-full border bg-white">
         <thead>
           <tr className="bg-gray-100">
             <th className="p-2 border">ID</th>
             <th className="p-2 border">Doctor</th>
             <th className="p-2 border">Patient</th>
             <th className="p-2 border">File</th>
+            <th className="p-2 border">Notes</th>
             <th className="p-2 border">Actions</th>
           </tr>
         </thead>
@@ -136,6 +137,7 @@ const Prescription = () => {
               <td className="p-2 border">{p.doctorId}</td>
               <td className="p-2 border">{p.patientId}</td>
               <td className="p-2 border">{p.fileName}</td>
+              <td className="p-2 border">{p.notes}</td>
               <td className="p-2 border flex gap-2">
                 <button
                   onClick={() => handleDownload(p.id, p.fileName)}

@@ -3,6 +3,7 @@ package com.healthcare.demo.models;
 //import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.healthcare.demo.enums.ApprovalStatus;
 import com.healthcare.demo.enums.Specialty;
 import jakarta.persistence.*;
 import lombok.*;
@@ -51,5 +52,9 @@ public class Doctor {
     // Available time range
     private LocalTime availableFrom;
     private LocalTime availableTo;
+
+    //doctor registration approval status
+    @Enumerated(EnumType.STRING)
+    private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
 }

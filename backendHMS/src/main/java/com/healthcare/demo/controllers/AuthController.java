@@ -1,5 +1,6 @@
 package com.healthcare.demo.controllers;
 
+import com.healthcare.demo.enums.ApprovalStatus;
 import com.healthcare.demo.models.Patient;
 import com.healthcare.demo.models.Doctor;
 import com.healthcare.demo.repositories.PatientRepository;
@@ -11,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -31,6 +34,7 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    // Patient registration
     @PostMapping("/register/patient")
     public String registerPatient(@RequestBody Patient patient) {
         patient.setPassword(passwordEncoder.encode(patient.getPassword()));
@@ -38,13 +42,16 @@ public class AuthController {
         return "Patient Registered Successfully!";
     }
 
+    // Doctor registration (pending approval)
     @PostMapping("/register/doctor")
     public String registerDoctor(@RequestBody Doctor doctor) {
         doctor.setPassword(passwordEncoder.encode(doctor.getPassword()));
+        doctor.setApprovalStatus(ApprovalStatus.PENDING); // ensure pending
         authService.registerDoctor(doctor);
-        return "Doctor Registered Successfully!";
+        return "Doctor Registered Successfully! Pending admin approval.";
     }
 
+    // Patient login
     @PostMapping("/login/patient")
     public ResponseEntity<Object> loginPatient(@RequestBody Patient patient) {
         Patient existingPatient = patientRepository.findByEmail(patient.getEmail());
@@ -57,14 +64,17 @@ public class AuthController {
                     existingPatient.getName()
             ));
         }
-        System.out.println("Logging in patient: " + existingPatient.getEmail() + ", id: " + existingPatient.getId());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
     }
 
+    // Doctor login (check approval)
     @PostMapping("/login/doctor")
     public ResponseEntity<Object> loginDoctor(@RequestBody Doctor doctor) {
         Doctor existingDoctor = doctorRepository.findByEmail(doctor.getEmail());
         if (existingDoctor != null && passwordEncoder.matches(doctor.getPassword(), existingDoctor.getPassword())) {
+            if (!ApprovalStatus.APPROVED.equals(existingDoctor.getApprovalStatus())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Doctor account not approved yet");
+            }
             String token = jwtUtil.generateToken(existingDoctor.getEmail());
             return ResponseEntity.ok(new AuthResponse(
                     token,
@@ -76,6 +86,22 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
     }
 
-    // Updated AuthResponse record with extra fields
+    // Admin login
+    @PostMapping("/login/admin")
+    public ResponseEntity<Object> loginAdmin(@RequestBody Map<String, String> request) {
+        if("admin".equals(request.get("username")) && "admin".equals(request.get("password"))) {
+            String token = jwtUtil.generateToken("admin");
+            return ResponseEntity.ok(Map.of("token", token, "userType", "admin"));
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+    }
+
+    // Simple ping for testing
+    @GetMapping("/ping")
+    public String ping() {
+        return "pong";
+    }
+
+    // AuthResponse record
     record AuthResponse(String token, Long id, String userType, String name) {}
 }

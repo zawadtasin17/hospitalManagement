@@ -1,5 +1,6 @@
 package com.healthcare.demo.dto;
 
+import com.healthcare.demo.enums.ApprovalStatus;
 import com.healthcare.demo.enums.Specialty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,4 +19,5 @@ public class DoctorDto {
     private Set<DayOfWeek> availableDays;
     private LocalTime availableFrom;
     private LocalTime availableTo;
+    private ApprovalStatus approvalStatus;
 }

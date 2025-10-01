@@ -1,38 +1,50 @@
 // src/context/AuthContext.js
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from "react";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); // user = { doctorId, userType, name, etc }
+  const [auth, setAuth] = useState(null);
+  // auth = { token, userType, id?, name? }
 
-  const login = (userData) => {
-    setUser(userData);
-    // optionally save to localStorage/sessionStorage
-    localStorage.setItem('user', JSON.stringify(userData));
+  // Login: save auth info to state + localStorage
+  const login = (authData) => {
+    setAuth(authData);
+    localStorage.setItem("auth", JSON.stringify(authData));
+    if (authData.token) {
+      localStorage.setItem("jwtToken", authData.token);
+    }
   };
 
+  // Logout: clear state + localStorage
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+    setAuth(null);
+    localStorage.removeItem("auth");
+    localStorage.removeItem("jwtToken");
   };
 
-  // On app load, try load user from localStorage
-  React.useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+  // Load from localStorage on app start
+  useEffect(() => {
+    const savedAuth = localStorage.getItem("auth");
+    const savedToken = localStorage.getItem("jwtToken");
+    if (savedAuth) {
+      const parsed = JSON.parse(savedAuth);
+      // ensure token is also set
+      if (savedToken && !parsed.token) {
+        parsed.token = savedToken;
+      }
+      setAuth(parsed);
     }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
+      <AuthContext.Provider value={{ auth, login, logout }}>
+        {children}
+      </AuthContext.Provider>
   );
 }
 
-// Custom hook for easy use
+// Custom hook for easy access
 export function useAuth() {
   return useContext(AuthContext);
 }

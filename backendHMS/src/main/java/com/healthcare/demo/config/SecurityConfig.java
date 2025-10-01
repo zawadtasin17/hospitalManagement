@@ -46,7 +46,10 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService() {
         return username -> {
             if ("admin".equals(username)) {
-                return new User("admin", passwordEncoder().encode("admin"), true, true, true, true, new ArrayList<>());
+                return User.withUsername("admin")
+                        .password(passwordEncoder().encode("admin"))
+                        .roles("ADMIN")   // 👈 assigns ROLE_ADMIN
+                        .build();
             }
             throw new UsernameNotFoundException("User not found");
         };
@@ -71,6 +74,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/appointments/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/appointments/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/appointments/**").permitAll()
+
+                        //locking admin endpoints
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+
 
                         .anyRequest().authenticated()
                 )

@@ -1,3 +1,4 @@
+// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
@@ -12,108 +13,109 @@ import UpcomingAppointments from './pages/UpcomingAppointments';
 import AppointmentStats from './pages/AppointmentStats';
 import DashboardOverview from './pages/DashboardOverview';
 import PatientAppointment from './pages/PatientAppointment';
-
-import { useAuth } from './context/AuthContext';
 import PatientPastAppointments from './pages/PatientPastAppointments';
 
+// Admin pages
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
+import PendingDoctorsPage from './pages/PendingDoctors';
+import SystemStatsPage from './pages/SystemStats';
+
+import { useAuth } from './context/AuthContext';
+
 function App() {
-  const { user } = useAuth();
+    const { auth } = useAuth(); // get auth object from context
 
-  if (!user) {
-    // Optionally redirect to register if no user logged in
     return (
-      <Router>
-        <NavBar />
-        <div className="container mx-auto p-4">
-          <Routes>
-            <Route path="/register" element={<PatientRegistration />} />
-            <Route path="*" element={<Navigate to="/register" replace />} />
-          </Routes>
-        </div>
-      </Router>
+        <Router>
+            <NavBar />
+            <div className="container mx-auto p-4">
+                <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/register" element={<PatientRegistration />} />
+                    <Route
+                        path="/adminlogin"
+                        element={
+                            auth?.userType === 'admin' ? (
+                                <Navigate to="/admindashboard" replace />
+                            ) : (
+                                <AdminLogin />
+                            )
+                        }
+                    />
+
+                    {/* Patient routes */}
+                    <Route
+                        path="/patientdashboard"
+                        element={
+                            auth?.userType === 'patient' ? (
+                                <PatientWelcomeDashboard patientId={auth.id} />
+                            ) : (
+                                <Navigate to="/register" replace />
+                            )
+                        }
+                    />
+                    <Route
+                        path="/appointment"
+                        element={
+                            auth?.userType === 'patient' ? (
+                                <PatientAppointment patientId={auth.id} />
+                            ) : (
+                                <Navigate to="/register" replace />
+                            )
+                        }
+                    />
+                    <Route
+                        path="/Patient-appointments"
+                        element={
+                            auth?.userType === 'patient' ? (
+                                <PatientPastAppointments patientId={auth.id} />
+                            ) : (
+                                <Navigate to="/register" replace />
+                            )
+                        }
+                    />
+
+                    {/* Doctor dashboard with nested routes */}
+                    <Route
+                        path="/doctordashboard/*"
+                        element={
+                            auth?.userType === 'doctor' ? (
+                                <DoctorDashboard />
+                            ) : (
+                                <Navigate to="/register" replace />
+                            )
+                        }
+                    >
+                        <Route index element={<DoctorProfile doctorId={auth?.id} />} />
+                        <Route path="profile" element={<DoctorProfile doctorId={auth?.id} />} />
+                        <Route path="appointments" element={<UpcomingAppointments doctorId={auth?.id} />} />
+                        <Route path="stats" element={<AppointmentStats doctorId={auth?.id} />} />
+                        <Route path="dashboard" element={<DashboardOverview doctorId={auth?.id} />} />
+                    </Route>
+
+                    {/* Admin dashboard with nested routes */}
+                    <Route
+                        path="/admindashboard/*"
+                        element={
+                            auth?.userType === 'admin' ? (
+                                <AdminDashboard />
+                            ) : (
+                                <Navigate to="/adminlogin" replace />
+                            )
+                        }
+                    >
+                        <Route path="pending" element={<PendingDoctorsPage />} />
+                        <Route path="stats" element={<SystemStatsPage />} />
+                    </Route>
+
+                    {/* Catch-all fallback */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </div>
+        </Router>
     );
-  }
-
-  return (
-    <Router>
-      <NavBar />
-      <div className="container mx-auto p-4">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/register" element={<PatientRegistration />} />
-
-          {/* Doctor dashboard with nested routes */}
-          <Route
-            path="/doctordashboard/*"
-            element={
-              user.userType === 'doctor' ? (
-                <DoctorDashboard />
-              ) : (
-                <PatientDashboard patientId={user.id} />
-              )
-            }
-          >
-            {/* Nested routes */}
-            <Route
-              index
-              element={<DoctorProfile doctorId={user.id} />}
-            />
-            <Route
-              path="profile"
-              element={<DoctorProfile doctorId={user.id} />}
-            />
-            <Route
-              path="appointments"
-              element={<UpcomingAppointments doctorId={user.id} />}
-            />
-            <Route
-              path="stats"
-              element={<AppointmentStats doctorId={user.id} />}
-            />
-            <Route
-              path="dashboard"
-              element={<DashboardOverview doctorId={user.id} />}
-            />
-          </Route>
-
-          {/* Patient routes */}
-          <Route
-            path="/patientdashboard"
-            element={
-              user.userType === 'patient' ? (
-                <PatientWelcomeDashboard patientId={user.id} />
-              ) : (
-                <Navigate to="/register" replace />
-              )
-            }
-          />
-          <Route
-            path="/appointment"
-            element={
-              user.userType === 'patient' ? (
-                <PatientAppointment patientId={user.id} />
-              ) : (
-                <Navigate to="/register" replace />
-              )
-            }
-          />
-          <Route
-            path="/Patient-appointments"
-            element={
-              user.userType === 'patient' ? (
-                <PatientPastAppointments patientId={user.id} />
-              ) : (
-                <Navigate to="/register" replace />
-              )
-            }
-          />
-
-          {/* Catch all unmatched routes */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
-    </Router>
-  );
 }
 
 export default App;

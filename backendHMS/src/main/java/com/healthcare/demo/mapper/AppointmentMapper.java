@@ -22,7 +22,8 @@ public class AppointmentMapper {
                 doctor.getSpecialty(),
                 doctor.getAvailableDays(),
                 doctor.getAvailableFrom(),
-                doctor.getAvailableTo()
+                doctor.getAvailableTo(),
+                doctor.getApprovalStatus()
         );
 
         PatientDto patientDto = new PatientDto(

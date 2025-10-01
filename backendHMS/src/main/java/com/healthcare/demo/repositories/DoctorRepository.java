@@ -1,5 +1,6 @@
 package com.healthcare.demo.repositories;
 
+import com.healthcare.demo.enums.ApprovalStatus;
 import com.healthcare.demo.enums.Specialty;
 import com.healthcare.demo.models.Doctor;
 import lombok.AllArgsConstructor;
@@ -14,4 +15,6 @@ import java.util.List;
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     Doctor findByEmail(String email);
     List<Doctor> findBySpecialty(Specialty specialty);
+    long countByApprovalStatus(ApprovalStatus status);
+    List<Doctor> findByApprovalStatus(ApprovalStatus status);
 }

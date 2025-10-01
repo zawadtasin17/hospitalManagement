@@ -16,10 +16,12 @@ public class AuthService {
     @Autowired
     private DoctorRepository doctorRepository;
 
+    // Save patient to database
     public Patient registerPatient(Patient patient) {
         return patientRepository.save(patient);
     }
 
+    // Save doctor to database
     public Doctor registerDoctor(Doctor doctor) {
         return doctorRepository.save(doctor);
     }
